@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1019429310377",
+    "project_id": "scountanddine",
+    "storage_bucket": "scountanddine.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1019429310377:android:afe747225ff44dbed47eb8",
+        "android_client_info": {
+          "package_name": "com.example.scoutanddine"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC78ThBodq6pD_3pCVPAFvnlTcqvr747Qs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
