@@ -16,37 +16,74 @@ import com.example.scoutanddine.loginandsignup.SignInActivity
 import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import android.Manifest
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
+import com.example.scoutanddine.navigation.NavBar
+import com.example.scoutanddine.services.LocationService
+
+import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
 
 class MainActivity : ComponentActivity() {
+    var i: Intent? = null
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            ),
+            0
+        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            requestBGLocationPermission()
+        }
+
+
         setContent {
             ScoutAndDineTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
-
+                    NavBar()
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
+
+
+    override fun onStart() {
+        super.onStart()
+        i = Intent(this, LocationService::class.java)
+        startService(i)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        stopService(i)
+    }
+    @RequiresApi(Build.VERSION_CODES.Q)
+    private fun requestBGLocationPermission() {
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ),
+            0
+        )
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     ScoutAndDineTheme {
-        Greeting("Android")
+        NavBar()
     }
 }
