@@ -7,6 +7,8 @@ import com.example.scoutanddine.data.entities.User
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.storage.storage
+import java.util.UUID
 
 object FirebaseObject {
 
@@ -15,41 +17,65 @@ object FirebaseObject {
         username: String,
         fullName: String,
         phoneNumber: String,
-        profilePictureURL: String,
+        profilePictureUri: Uri
     ) {
         val auth: FirebaseAuth = FirebaseAuth.getInstance()
-        // Check if user already exists
-        Firebase.firestore.collection("users")
-            .whereEqualTo("email", email)
-            .get()
-            .addOnSuccessListener { documents ->
-                if (documents.isEmpty) {
-                    // User doesn't exist, create new user
-                    val user = User()
-                        user.email = email
-                        user.username = username
-                        user.name = fullName
-                        user.phone = phoneNumber
-                        user.image = profilePictureURL
-                        user.id = auth.currentUser!!.uid
 
-                    Firebase.firestore.collection("users").document(user.id).set(user).addOnSuccessListener {
-                        Log.d("FirebaseHelper", "User data added successfully")
-                        //successCallback()
-                    }.addOnFailureListener { e ->
-                        Log.w("FirebaseHelper", "Error adding document", e)
+        uploadProfilePicture(profilePictureUri, { profilePictureURL ->
+            Firebase.firestore.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .addOnSuccessListener { documents ->
+                    if (documents.isEmpty) {
+                        val user = User().apply {
+                            this.email = email
+                            this.username = username
+                            this.name = fullName
+                            this.phone = phoneNumber
+                            this.image = profilePictureURL
+                            this.id = auth.currentUser!!.uid
+                        }
+
+                        Firebase.firestore.collection("users").document(user.id).set(user)
+                            .addOnSuccessListener {
+                                Log.d("FirebaseHelper", "User data added successfully")
+                                //successCallback()
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w("FirebaseHelper", "Error adding document", e)
+                                //failureCallback()
+                            }
+                    } else {
+                        // Korisnik već postoji
+                        Log.d("FirebaseHelper", "User already exists with email: $email")
+                        //failureCallback()
                     }
-                } else {
-                    // User already exists
-                    Log.d("FirebaseHelper", "User already exists with email: $email")
-                   // failureCallback()
+                }
+                .addOnFailureListener { e ->
+                    Log.w("FirebaseHelper", "Error checking user existence", e)
+                    //failureCallback()
+                }
+        }, { exception ->
+            // Greška prilikom čuvanja slike
+            Log.w("FirebaseHelper", "Error uploading profile picture", exception)
+            //failureCallback()
+        })
+    }
+    private fun uploadProfilePicture(profilePictureUri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit) {
+        val storageRef = Firebase.storage.reference.child("profile_pictures/${UUID.randomUUID()}.jpg")
+        storageRef.putFile(profilePictureUri)
+            .addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { uri ->
+                    onSuccess(uri.toString())
+                }.addOnFailureListener { exception ->
+                    onFailure(exception)
                 }
             }
-            .addOnFailureListener { e ->
-                Log.w("FirebaseHelper", "Error checking user existence", e)
-                //failureCallback()
+            .addOnFailureListener { exception ->
+                onFailure(exception)
             }
     }
+
 
     fun addCafeRestaurant(
         name: String,

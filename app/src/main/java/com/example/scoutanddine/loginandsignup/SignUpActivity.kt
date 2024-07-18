@@ -1,5 +1,6 @@
 package com.example.scoutanddine.loginandsignup
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -21,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -35,39 +37,42 @@ import com.google.firebase.auth.ktx.auth
 class SignUpActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
-    private var imageUri: Uri? = null
+    private var imageUriState: MutableState<Uri?> = mutableStateOf(null)
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        imageUri = uri
+        imageUriState.value = uri
+        Log.d("SLIKA", "${imageUriState.value?.encodedPath}")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         auth = Firebase.auth
         setContent {
+            val context = LocalContext.current
             ScoutAndDineTheme {
                 SignUpScreen(
+                    context = context,
                     onSignUpClick = { email, password, username, name, phoneNumber, profilePicture ->
-                        signUp(email, password, username, name, phoneNumber, profilePicture.toString()) //privremeno
+                        signUp(email, password, username, name, phoneNumber, profilePicture)
                     },
                     onSignInClick = {
                         val intent = Intent(this, SignInActivity::class.java)
                         startActivity(intent)
                     },
                     onPickImageClick = { pickImageLauncher.launch("image/*") },
-                    imageUri = imageUri
+                    imageUriState = imageUriState
                 )
             }
         }
     }
 
-    private fun signUp(email: String, password: String, username: String, name: String, phoneNumber : String, profilePicture : Any) {
+    private fun signUp(email: String, password: String, username: String, name: String, phoneNumber : String, profilePicture : Uri) {
         auth.createUserWithEmailAndPassword(email.trim(), password.trim())
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d("com.example.scoutanddine.loginandsignup.SignUpActivity", "createUserWithEmail:success")
-                    FirebaseObject.addUser(email,username,name,phoneNumber,name)
+                    FirebaseObject.addUser(email,username,name,phoneNumber,profilePicture)
                     val intent = Intent(this, MainActivity::class.java)
                     startActivity(intent)
                 } else {
@@ -89,17 +94,17 @@ class SignUpActivity : ComponentActivity() {
 }
 @Composable
 fun SignUpScreen(
-    onSignUpClick: (String, String, String, String, String, Any) -> Unit,
+    context: Context,
+    onSignUpClick: (String, String, String, String, String, Uri) -> Unit,
     onSignInClick: () -> Unit,
     onPickImageClick: () -> Unit,
-    imageUri: Uri?
+    imageUriState: MutableState<Uri?>
 ) {
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var phoneNumber by remember { mutableStateOf(TextFieldValue("")) }
     var name by remember { mutableStateOf(TextFieldValue("")) }
-    var profilePictureUri by remember { mutableStateOf<Uri?>(null) }
 
     Column(
         modifier = Modifier
@@ -132,7 +137,8 @@ fun SignUpScreen(
             Text(
                 text = "Sign Up",
                 style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 24.dp)
+                modifier = Modifier
+                    .padding(bottom = 12.dp)
                     .align(Alignment.CenterHorizontally)
             )
 
@@ -194,43 +200,56 @@ fun SignUpScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)
-
             ) {
                 Text(text = "Upload Image", color = Color.White)
             }
 
-            imageUri?.let {
-                Image(
-                    painter = rememberAsyncImagePainter(it),
-                    contentDescription = null,
-                    modifier = Modifier.size(128.dp)
+            if (imageUriState.value != null) {
+                Text(
+                    text = imageUriState.value?.lastPathSegment ?: "Selected Image",
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
+                )
+            } else {
+                Text(
+                    text = "No file selected",
+                    modifier = Modifier
+                        .padding(top = 8.dp)
+                        .align(Alignment.CenterHorizontally),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Gray
                 )
             }
-
             Spacer(modifier = Modifier.height(5.dp))
 
             // Sign Up Button
             Button(
                 onClick = {
-                   // profilePictureUri?.let {
+                    imageUriState.value?.let { uri ->
                         onSignUpClick(
                             email.text,
                             password.text,
                             username.text,
                             name.text,
                             phoneNumber.text,
-                            name.text
-                          //  it
+                            uri
                         )
-                   // }
+                    } ?: run {
+                        // Show an error message if imageUri is null
+                        Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00573F)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 16.dp)
+                    .padding(top = 10.dp)
             ) {
                 Text(text = "Sign Up", color = Color.White)
             }
+
 
             Spacer(modifier = Modifier.height(5.dp))
 
