@@ -94,7 +94,7 @@ class LocationService : Service() {
                         latitude = cafeRestaurant.location.latitude
                         longitude = cafeRestaurant.location.longitude
                     }
-                    if (location.distanceTo(cafeLocation) < 10) { // Check if within 100 meters
+                    if (location.distanceTo(cafeLocation) < 50) { // Check if within 100 meters
                         sendNotification(cafeRestaurant)
                     }
                 }
@@ -110,7 +110,7 @@ class LocationService : Service() {
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Nearby Cafe/Restaurant")
             .setContentText("You are near ${cafeRestaurant.name}")
-            //.setSmallIcon(R.drawable.logo)
+            .setSmallIcon(R.drawable.bell_icon)
             .setContentIntent(pendingIntent)
             .build()
 
@@ -127,7 +127,7 @@ class LocationService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Location Service")
             .setContentText("Tracking your location")
-            //.setSmallIcon(R.drawable.logo)
+            .setSmallIcon(R.drawable.bell_icon)
             .setContentIntent(pendingIntent)
             .build()
     }

@@ -7,6 +7,7 @@ import com.example.scoutanddine.data.entities.User
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.storage
 import java.util.UUID
 
@@ -81,9 +82,13 @@ object FirebaseObject {
         name: String,
         latitude: Double,
         longitude: Double,
+        address: String,
         rating: Double,
         comments: List<String>,
         type: String,
+        priceTo: Int,
+        priceFrom:Int,
+        hours: String,
         successCallback: () -> Unit,
         failureCallback: (Exception) -> Unit
     ) {
@@ -91,9 +96,13 @@ object FirebaseObject {
         val cafeRestaurant = CafeRestaurant(
             name = name,
             location = location,
+            address = address,
             rating = rating,
             comments = comments,
-            type = type
+            type = type,
+            hours = hours,
+            priceTo = priceTo,
+            priceFrom = priceFrom
         )
 
         Firebase.firestore.collection("objects")
@@ -105,6 +114,20 @@ object FirebaseObject {
             .addOnFailureListener { e ->
                 Log.w("FirebaseHelper", "Error adding CafeRestaurant", e)
                 failureCallback(e)
+            }
+    }
+
+    fun fetchCafesRestaurants(onSuccess: (List<CafeRestaurant>) -> Unit, onFailure: (Exception) -> Unit) {
+        Firebase.firestore.collection("objects")
+            .get()
+            .addOnSuccessListener { result ->
+                val cafeRestaurants = result.mapNotNull { document ->
+                    document.toObject<CafeRestaurant>()
+                }
+                onSuccess(cafeRestaurants)
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
             }
     }
 
