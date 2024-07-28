@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.os.bundleOf
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavHostController
 import com.example.scoutanddine.data.CafeRestaurant
@@ -62,7 +63,7 @@ fun MainScreen(navController: NavHostController) {
         position = CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 20f)
     }
 
-   /* LaunchedEffect(userLocation) {
+   LaunchedEffect(userLocation) {
         userLocation?.let {
             val latLng = LatLng(it.latitude, it.longitude)
             val zoomLevel = cameraPositionState.position.zoom
@@ -70,7 +71,7 @@ fun MainScreen(navController: NavHostController) {
             cameraPositionState.move(CameraUpdateFactory.newLatLngZoom(latLng, zoomLevel))
         }
     }
-*/
+
     LaunchedEffect(Unit) {
         FirebaseObject.fetchCafesRestaurants(
             onSuccess = { cafes ->
@@ -104,7 +105,17 @@ fun MainScreen(navController: NavHostController) {
                     state = MarkerState(position = LatLng(cafe.location.latitude, cafe.location.longitude)),
                     title = cafe.name,
                     snippet = cafe.address,
-                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE) // Set marker color
+                   /* onClick =  {
+                        val cafeID = cafe.id
+                        navController.navigate("details/$cafeID")
+                        true
+                    },*/
+                    icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE),
+                    onInfoWindowLongClick = {
+                        Log.d("OVO JE ID", cafe.id)
+                        val cafeID = cafe.id
+                        navController.navigate("details/$cafeID")
+                    }
                 )
             }
         }
@@ -119,7 +130,6 @@ fun MainScreen(navController: NavHostController) {
                         longitude = cafeRestaurant.location.longitude,
                         address = cafeRestaurant.address,
                         rating = 0.0,
-                        comments = cafeRestaurant.comments,
                         type = cafeRestaurant.type,
                         priceFrom = cafeRestaurant.priceFrom,
                         priceTo = cafeRestaurant.priceTo,

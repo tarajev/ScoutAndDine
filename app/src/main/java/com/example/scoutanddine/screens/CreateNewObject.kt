@@ -90,11 +90,13 @@ fun AddObjectDialog(onDismiss: () -> Unit, onSubmit: (CafeRestaurant) -> Unit, l
                     onValueChange = { hours = it },
                     label = { Text("Working Hours") }
                 )
-                TextField(
+                /*TextField(
                     value = reviews,
                     onValueChange = { reviews = it },
                     label = { Text("Reviews") }
                 )
+                */
+
             }
         },
         confirmButton = {
@@ -107,7 +109,6 @@ fun AddObjectDialog(onDismiss: () -> Unit, onSubmit: (CafeRestaurant) -> Unit, l
                         location = location,
                         address = address,
                         rating = 0.0,
-                        comments = listOf(reviews),
                         type = type,
                         priceFrom = priceFrom.toInt(),
                         priceTo = priceTo.toInt(),

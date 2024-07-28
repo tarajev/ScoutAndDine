@@ -94,8 +94,9 @@ class LocationService : Service() {
                         latitude = cafeRestaurant.location.latitude
                         longitude = cafeRestaurant.location.longitude
                     }
-                    if (location.distanceTo(cafeLocation) < 50) { // Check if within 100 meters
+                    if (location.distanceTo(cafeLocation) < 200) { // Check if within 100 meters
                         sendNotification(cafeRestaurant)
+                        Log.d("NOTIFIKACIJA", "POSLATA")
                     }
                 }
             }

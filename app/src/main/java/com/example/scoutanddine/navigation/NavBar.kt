@@ -16,9 +16,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.scoutanddine.screens.ObjectDetailsScreen
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -33,7 +36,12 @@ fun NavBar() {
     ) {
         NavHost(navController, startDestination = "home") {
             composable("home") { MainScreen(navController) }
-
+            composable("details/{cafeID}", arguments = listOf(navArgument("cafeID") { type = NavType.StringType }))
+            { backStackEntry ->
+                val cafeID = backStackEntry.arguments?.getString("cafeID")!!
+                ObjectDetailsScreen(navController, cafeID)
+            }
+           // composable("details"){ ObjectDetailsScreen(navController = navController, "Kd5Vx6amZORNRKee2ztH") }
         }
     }
 }
@@ -63,6 +71,7 @@ fun BottomNavBar(navController: NavHostController) {
             label = { Text("LeaderBoard") },
             selected = false,
             onClick = { navController.navigate("leaderboard") }
+
         )
     }
 }
