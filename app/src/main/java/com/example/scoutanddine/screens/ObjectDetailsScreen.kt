@@ -1,11 +1,22 @@
 package com.example.scoutanddine.screens
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -14,16 +25,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scoutanddine.R
 import com.example.scoutanddine.data.CafeRestaurant
 import com.example.scoutanddine.data.FirebaseObject
 import com.example.scoutanddine.data.FirebaseObject.fetchCafeRestaurantById
+import com.example.scoutanddine.data.FirebaseObject.uploadImageRestaurant
+import java.io.File
+import java.util.UUID
 
 
 @Composable
@@ -38,6 +56,9 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
     var crowdOption1 by remember { mutableStateOf(false) }
     var crowdOption2 by remember { mutableStateOf(false) }
     var crowdOption3 by remember { mutableStateOf(false) }
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
 
     fetchCafeRestaurantById(
         id = cafeRestaurantID,
@@ -50,6 +71,42 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
             isLoading = false
         }
     )
+
+    fun createImageFile(context: Context): Uri {
+        val storageDir: File? = context.getExternalFilesDir(null)
+        val file = File.createTempFile(
+            "JPEG_${UUID.randomUUID()}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        )
+        return FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+    }
+
+    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            selectedImageUri?.let { uri ->
+                imageUrl = uri.toString() // Store image URL
+            }
+        }
+    }
+
+    val getImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        selectedImageUri = uri
+    }
+
+    val requestCameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            val photoUri = createImageFile(context)
+            selectedImageUri = photoUri
+            takePictureLauncher.launch(photoUri)
+        } else {
+            // Handle permission denied case
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -124,156 +181,223 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            cafeRestaurant!!.reviews.forEach { review ->
-                Text(
-                    text = "Ocena: ${review.rating} zvezdica",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = review.reviewText,
-                    fontSize = 16.sp,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = "Autor: ${review.user}, Datum: ${review.date}",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-            }
-
-            Row() {
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(16.dp),
-                    onClick = { showReviewDialog = true }
-
-                ) {
-                    Text(text = "Ostavi recenziju", color = Color.White)
-                }
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(16.dp),
-                    onClick = { showCrowdDialog = true }
-
-                ) {
-                    Text(text = "Prijavi gužvu", color = Color.White)
-                }
-            }
-            if (showReviewDialog) {
-                AlertDialog(
-                    onDismissRequest = { showReviewDialog = false },
-                    title = { Text(text = "Ostavi recenziju") },
-                    text = {
-                        Column {
-                            OutlinedTextField(
-                                value = reviewText,
-                                onValueChange = { reviewText = it },
-                                label = { Text("Recenzija") }
+            LazyRow(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(cafeRestaurant!!.reviews) { review ->
+                    Card(
+                        modifier = Modifier
+                            .width(300.dp) // Adjust width as needed
+                            .padding(horizontal = 8.dp)
+                            .border(1.dp, Color.Gray),
+                        elevation = CardDefaults.cardElevation(2.5.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Autor: ${review.user}",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = review.date,
+                                    fontSize = 14.sp,
+                                    color = Color.Gray
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = review.reviewText,
+                                fontSize = 16.sp,
+                                color = Color.Black
                             )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(text = "Ocena:")
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                for (i in 1..5) {
-                                    IconButton(
-                                        onClick = { rating = i },
-                                        modifier = Modifier.size(32.dp)
-                                    ) {
-                                        androidx.compose.material3.Icon(
-                                            painter = painterResource(id = if (i <= rating) R.drawable.star_filled_icon else R.drawable.star_outline_icon),
-                                            contentDescription = null,
-                                            tint = if (i <= rating) Color.Yellow else Color.Gray
-                                        )
-                                    }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Ocena: ${review.rating} zvezdica",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp,
+                                color = Color.Yellow
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(end = 8.dp),
+                onClick = { showReviewDialog = true }
+            ) {
+                Text(text = "Ostavi recenziju", color = Color.White)
+            }
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(start = 8.dp),
+                onClick = { showCrowdDialog = true }
+            ) {
+                Text(text = "Prijavi gužvu", color = Color.White)
+            }
+        }
+
+        if (showReviewDialog) {
+            AlertDialog(
+                onDismissRequest = { showReviewDialog = false },
+                title = { Text(text = "Ostavi recenziju") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = reviewText,
+                            onValueChange = { reviewText = it },
+                            label = { Text("Recenzija") }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(text = "Ocena:")
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            for (i in 1..5) {
+                                IconButton(
+                                    onClick = { rating = i },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    androidx.compose.material3.Icon(
+                                        painter = painterResource(id = if (i <= rating) R.drawable.star_filled_icon else R.drawable.star_outline_icon),
+                                        contentDescription = null,
+                                        tint = if (i <= rating) Color.Yellow else Color.Gray
+                                    )
                                 }
                             }
                         }
-                    },
-                    confirmButton = {
-                        Button(onClick = {
-                            FirebaseObject.addReview(cafeRestaurantID,reviewText,rating)
-                            showReviewDialog = false
-                        }) {
-                            Text("Potvrdi")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                val permissionCheckResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                                if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                                    val photoUri = createImageFile(context)
+                                    selectedImageUri = photoUri
+                                    takePictureLauncher.launch(photoUri)
+                                } else {
+                                    requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
+                            }
+                        ) {
+                            Text("Dodaj sliku")
                         }
-                    },
-                    dismissButton = {
-                        Button(onClick = {
-                            showReviewDialog = false
-                        }) {
-                            Text("Otkaži")
+                        selectedImageUri?.let {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Image(
+                                painter = rememberAsyncImagePainter(it),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .padding(4.dp)
+                            )
                         }
                     }
-                )
-            }
-
-            if (showCrowdDialog) {
-                AlertDialog(
-                    onDismissRequest = { showCrowdDialog = false },
-                    title = { Text(text = "Prijavi gužvu") },
-                    text = {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    checked = crowdOption1,
-                                    onCheckedChange = { crowdOption1 = it }
-                                )
-                                Text(text = "Nema slobodnih mesta")
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    checked = crowdOption2,
-                                    onCheckedChange = { crowdOption2 = it }
-                                )
-                                Text(text = "Ima nekoliko slobodnih mesta")
-                            }
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Checkbox(
-                                    checked = crowdOption3,
-                                    onCheckedChange = { crowdOption3 = it }
-                                )
-                                Text(text = "Mnogo slobodnih mesta")
-                            }
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        if (selectedImageUri != null) {
+                            uploadImageRestaurant(
+                                cafeRestaurantID = cafeRestaurantID,
+                                imageUri = selectedImageUri!!,
+                                onSuccess = {
+                                    FirebaseObject.addReview(cafeRestaurantID, reviewText, rating)
+                                    showReviewDialog = false
+                                },
+                                onFailure = {
+                                    // Handle failure
+                                }
+                            )
+                        } else {
+                            FirebaseObject.addReview(cafeRestaurantID, reviewText, rating)
+                            showReviewDialog = false
                         }
-                    },
-                    confirmButton = {
-                        Button(onClick = {
-                            var info = ""
-                            if (crowdOption1)
-                                info = "Nema slobodnih mesta"
-                            else if (crowdOption2)
-                                info = "Ima nekoliko slobodnih mesta"
-                            else
-                                info = "Mnogo slobodnih mesta"
-
-                            FirebaseObject.addCrowdednessInformation(cafeRestaurantID, info)
-                            showCrowdDialog = false
-                        }) {
-                            Text("Potvrdi")
-                        }
-                    },
-                    dismissButton = {
-                        Button(onClick = { showCrowdDialog = false }) {
-                            Text("Otkaži")
-                        }
+                    }) {
+                        Text("Potvrdi")
                     }
-                )
-            }
-
+                },
+                dismissButton = {
+                    Button(onClick = {
+                        showReviewDialog = false
+                    }) {
+                        Text("Otkaži")
+                    }
+                }
+            )
         }
+
+        if (showCrowdDialog) {
+            AlertDialog(
+                onDismissRequest = { showCrowdDialog = false },
+                title = { Text(text = "Prijavi gužvu") },
+                text = {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = crowdOption1,
+                                onCheckedChange = { crowdOption1 = it }
+                            )
+                            Text(text = "Nema slobodnih mesta")
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = crowdOption2,
+                                onCheckedChange = { crowdOption2 = it }
+                            )
+                            Text(text = "Ima nekoliko slobodnih mesta")
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = crowdOption3,
+                                onCheckedChange = { crowdOption3 = it }
+                            )
+                            Text(text = "Mnogo slobodnih mesta")
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        var info = ""
+                        if (crowdOption1)
+                            info = "Nema slobodnih mesta"
+                        else if (crowdOption2)
+                            info = "Ima nekoliko slobodnih mesta"
+                        else
+                            info = "Mnogo slobodnih mesta"
+
+                        FirebaseObject.addCrowdednessInformation(cafeRestaurantID, info)
+                        showCrowdDialog = false
+                    }) {
+                        Text("Potvrdi")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showCrowdDialog = false }) {
+                        Text("Otkaži")
+                    }
+                }
+            )
+        }
+
     }
+}

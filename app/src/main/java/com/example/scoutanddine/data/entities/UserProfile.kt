@@ -23,5 +23,6 @@ class User {
     var name: String = ""
     var phone: String = ""
     var image: String = ""
+    var points: Int = 0
 }
 

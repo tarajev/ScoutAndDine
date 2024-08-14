@@ -5,6 +5,7 @@ import com.google.firebase.auth.FirebaseAuth
 import android.net.Uri
 import com.example.scoutanddine.data.entities.User
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.toObject
@@ -25,9 +26,7 @@ object FirebaseObject {
         val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
         uploadProfilePicture(profilePictureUri, { profilePictureURL ->
-            Firebase.firestore.collection("users")
-                .whereEqualTo("email", email)
-                .get()
+            Firebase.firestore.collection("users").whereEqualTo("email", email).get()
                 .addOnSuccessListener { documents ->
                     if (documents.isEmpty) {
                         val user = User().apply {
@@ -43,8 +42,7 @@ object FirebaseObject {
                             .addOnSuccessListener {
                                 Log.d("FirebaseHelper", "User data added successfully")
                                 //successCallback()
-                            }
-                            .addOnFailureListener { e ->
+                            }.addOnFailureListener { e ->
                                 Log.w("FirebaseHelper", "Error adding document", e)
                                 //failureCallback()
                             }
@@ -53,8 +51,7 @@ object FirebaseObject {
                         Log.d("FirebaseHelper", "User already exists with email: $email")
                         //failureCallback()
                     }
-                }
-                .addOnFailureListener { e ->
+                }.addOnFailureListener { e ->
                     Log.w("FirebaseHelper", "Error checking user existence", e)
                     //failureCallback()
                 }
@@ -66,23 +63,19 @@ object FirebaseObject {
     }
 
     private fun uploadProfilePicture(
-        profilePictureUri: Uri,
-        onSuccess: (String) -> Unit,
-        onFailure: (Exception) -> Unit
+        profilePictureUri: Uri, onSuccess: (String) -> Unit, onFailure: (Exception) -> Unit
     ) {
         val storageRef =
             Firebase.storage.reference.child("profile_pictures/${UUID.randomUUID()}.jpg")
-        storageRef.putFile(profilePictureUri)
-            .addOnSuccessListener {
-                storageRef.downloadUrl.addOnSuccessListener { uri ->
-                    onSuccess(uri.toString())
-                }.addOnFailureListener { exception ->
-                    onFailure(exception)
-                }
-            }
-            .addOnFailureListener { exception ->
+        storageRef.putFile(profilePictureUri).addOnSuccessListener {
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
+                onSuccess(uri.toString())
+            }.addOnFailureListener { exception ->
                 onFailure(exception)
             }
+        }.addOnFailureListener { exception ->
+            onFailure(exception)
+        }
     }
 
 
@@ -121,32 +114,26 @@ object FirebaseObject {
                     "CafeRestaurant added successfully with ID: ${cafeRestaurant.id}"
                 )
                 successCallback()
-            }
-            .addOnFailureListener { e ->
+            }.addOnFailureListener { e ->
                 Log.w("FirebaseHelper", "Error adding CafeRestaurant", e)
                 failureCallback(e)
             }
     }
 
     fun fetchCafesRestaurants(
-        onSuccess: (List<CafeRestaurant>) -> Unit,
-        onFailure: (Exception) -> Unit
+        onSuccess: (List<CafeRestaurant>) -> Unit, onFailure: (Exception) -> Unit
     ) {
-        Firebase.firestore.collection("objects")
-            .get()
-            .addOnSuccessListener { result ->
-                val cafeRestaurants = result.mapNotNull { document ->
-                    val cafeRestaurant = document.toObject<CafeRestaurant>()
-                    cafeRestaurant.id = document.id
-                    cafeRestaurant
-                }
-                onSuccess(cafeRestaurants)
+        Firebase.firestore.collection("objects").get().addOnSuccessListener { result ->
+            val cafeRestaurants = result.mapNotNull { document ->
+                val cafeRestaurant = document.toObject<CafeRestaurant>()
+                cafeRestaurant.id = document.id
+                cafeRestaurant
             }
-            .addOnFailureListener { exception ->
-                onFailure(exception)
-            }
-    }
-    /* fun fetchCafeRestaurantById(id: String, onSuccess: (CafeRestaurant) -> Unit, onFailure: (Exception) -> Unit) {
+            onSuccess(cafeRestaurants)
+        }.addOnFailureListener { exception ->
+            onFailure(exception)
+        }
+    }/* fun fetchCafeRestaurantById(id: String, onSuccess: (CafeRestaurant) -> Unit, onFailure: (Exception) -> Unit) {
 
          Firebase.firestore.collection("objects").document(id).get()
              .addOnSuccessListener { document ->
@@ -164,57 +151,48 @@ object FirebaseObject {
      }*/
 
     fun fetchCafeRestaurantById(
-        id: String,
-        onSuccess: (CafeRestaurant) -> Unit,
-        onFailure: (Exception) -> Unit
+        id: String, onSuccess: (CafeRestaurant) -> Unit, onFailure: (Exception) -> Unit
     ) {
         // Reference to the CafeRestaurant document
         val cafeDocumentRef = Firebase.firestore.collection("objects").document(id)
 
-        // First, get the CafeRestaurant document
-        cafeDocumentRef.get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    // Deserialize the CafeRestaurant document
-                    val cafeRestaurant = document.toObject(CafeRestaurant::class.java)
-                    cafeRestaurant?.id = document.id
+        cafeDocumentRef.get().addOnSuccessListener { document ->
+            if (document.exists()) {
 
-                    // Now, get the reviews from the subcollection
-                    cafeDocumentRef.collection("reviews").get()
-                        .addOnSuccessListener { reviewDocuments ->
-                            val reviews = reviewDocuments.mapNotNull { reviewDoc ->
-                                reviewDoc.toObject(Review::class.java)
-                            }
-                            // Set the reviews to the cafeRestaurant object
-                            cafeRestaurant?.reviews = reviews
-                            onSuccess(cafeRestaurant!!)
+                val cafeRestaurant = document.toObject(CafeRestaurant::class.java)
+                cafeRestaurant?.id = document.id
+
+                cafeDocumentRef.collection("reviews").get()
+                    .addOnSuccessListener { reviewDocuments ->
+                        val reviews = reviewDocuments.mapNotNull { reviewDoc ->
+                            reviewDoc.toObject(Review::class.java)
                         }
-                        .addOnFailureListener { e ->
-                            onFailure(e)
-                        }
-                } else {
-                    onFailure(Exception("Document does not exist"))
-                }
+                        // Set the reviews to the cafeRestaurant object
+                        cafeRestaurant?.reviews = reviews
+                        onSuccess(cafeRestaurant!!)
+                    }.addOnFailureListener { e ->
+                        onFailure(e)
+                    }
+            } else {
+                onFailure(Exception("Document does not exist"))
             }
-            .addOnFailureListener { e ->
-                onFailure(e)
-            }
+        }.addOnFailureListener { e ->
+            onFailure(e)
+        }
     }
 
     fun addCrowdednessInformation(id: String, crowdInfo: String) {
         val formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")
         val current = LocalDateTime.now().format(formatter).toString()
         val updates = hashMapOf<String, Any>(
-            "crowdInfo" to crowdInfo,
-            "lastUpdated" to current
+            "crowdInfo" to crowdInfo, "lastUpdated" to current
         )
-        Firebase.firestore.collection("objects").document(id).update(updates)
-            .addOnSuccessListener {
-                Log.d("FirestoreUpdate", "Document successfully updated!")
-            }
-            .addOnFailureListener { e ->
-                Log.w("FirestoreUpdate", "Error updating document", e)
-            }
+        Firebase.firestore.collection("objects").document(id).update(updates).addOnSuccessListener {
+            addPoints(auth.currentUser!!.uid.toString(), 2)
+            Log.d("FirestoreUpdate", "Document successfully updated!")
+        }.addOnFailureListener { e ->
+            Log.w("FirestoreUpdate", "Error updating document", e)
+        }
     }
 
     fun addReview(cafeId: String, reviewText: String, rating: Int) {
@@ -235,14 +213,12 @@ object FirebaseObject {
                     val reviewId = Firebase.firestore.collection("objects").document(cafeId)
                         .collection("reviews").document().id
 
-                    Firebase.firestore.collection("objects").document(cafeId)
-                        .collection("reviews").document(reviewId)
-                        .set(review)
-                        .addOnSuccessListener {
+                    Firebase.firestore.collection("objects").document(cafeId).collection("reviews")
+                        .document(reviewId).set(review).addOnSuccessListener {
                             Log.d("FirestoreUpdate", "Review successfully added!")
                             //updateAverageRating(cafeId) // azuriranje prosecne ocene implementirati
-                        }
-                        .addOnFailureListener { e ->
+                            addPoints(auth.currentUser!!.uid.toString(), 3)
+                        }.addOnFailureListener { e ->
                             Log.w("FirestoreUpdate", "Error adding review", e)
                         }
                 } else {
@@ -251,5 +227,80 @@ object FirebaseObject {
             }.addOnFailureListener { e ->
                 Log.w("Firebase", "Error getting user", e)
             }
+    }
+
+    fun addPoints(userId: String, points: Int) {
+        val userDocRef = Firebase.firestore.collection("users").document(userId)
+
+        userDocRef.get().addOnSuccessListener { document ->
+            if (document.exists()) {
+                val currentPoints = document.getLong("points") ?: 0
+                val updatedPoints = currentPoints + points
+
+                userDocRef.update("points", updatedPoints).addOnSuccessListener {
+                    Log.d("FirebaseUpdate", "Points successfully updated")
+                }.addOnFailureListener { e ->
+                    Log.w("FirebaseUpdate", "Error updating points", e)
+                }
+            } else {
+                Log.d("FirebaseUpdate", "User does not exist")
+            }
+        }.addOnFailureListener { e ->
+            Log.w("FirebaseUpdate", "Error getting user", e)
+        }
+    }
+
+    fun fetchUsers(onSuccess: (List<User>) -> Unit, onFailure: (Exception) -> Unit) {
+        Firebase.firestore.collection("users").get().addOnSuccessListener { result ->
+            val users = result.map { document ->
+                document.toObject(User::class.java)
+            }
+            // Sort by points in descending order
+            val sortedUsers = users.sortedByDescending { it.points }
+            onSuccess(sortedUsers)
+        }.addOnFailureListener { e ->
+            onFailure(e)
+        }
+    }
+
+    fun fetchUserById(id: String, onSuccess: (User) -> Unit, onFailure: (Exception) -> Unit) {
+        val doc = Firebase.firestore.collection("users").document(id)
+        doc.get().addOnSuccessListener { document ->
+            if (document.exists()) {
+                val user = document.toObject(User::class.java)
+                if (user != null) {
+                    onSuccess(user)
+                }
+            }
+        }.addOnFailureListener { e ->
+            onFailure(e)
+        }
+    }
+
+    fun uploadImageRestaurant(
+        cafeRestaurantID: String,
+        imageUri: Uri,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val storageRef =
+            Firebase.storage.reference.child("object_pictures/${UUID.randomUUID()}.jpg")
+        storageRef.putFile(imageUri).addOnSuccessListener {
+            storageRef.downloadUrl.addOnSuccessListener { uri ->
+                val imageUrl = uri.toString()
+                val firestoreRef = Firebase.firestore.collection("objects").document(cafeRestaurantID)
+                firestoreRef.update("imageUrls", FieldValue.arrayUnion(imageUrl))
+                    .addOnSuccessListener {
+                        onSuccess()
+                    }.addOnFailureListener { e ->
+                        onFailure(e)
+                    }
+
+            }.addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+        }.addOnFailureListener { exception ->
+            onFailure(exception)
+        }
     }
 }

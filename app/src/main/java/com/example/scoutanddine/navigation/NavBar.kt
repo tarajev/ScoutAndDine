@@ -21,7 +21,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.scoutanddine.screens.LeaderboardScreen
 import com.example.scoutanddine.screens.ObjectDetailsScreen
+import com.example.scoutanddine.screens.ProfileScreen
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
@@ -32,18 +34,22 @@ import com.google.firebase.auth.auth
 fun NavBar() {
     val navController = rememberNavController()
     Scaffold(
-        bottomBar = { BottomNavBar(navController) }
-    ) {
-        NavHost(navController, startDestination = "home") {
-            composable("home") { MainScreen(navController) }
-            composable("details/{cafeID}", arguments = listOf(navArgument("cafeID") { type = NavType.StringType }))
-            { backStackEntry ->
-                val cafeID = backStackEntry.arguments?.getString("cafeID")!!
-                ObjectDetailsScreen(navController, cafeID)
+        bottomBar = { BottomNavBar(navController) },
+        content = {
+            NavHost(
+                navController = navController,
+                startDestination = "home",
+            ) {
+                composable("home") { MainScreen(navController) }
+                composable("details/{cafeID}", arguments = listOf(navArgument("cafeID") { type = NavType.StringType })) { backStackEntry ->
+                    val cafeID = backStackEntry.arguments?.getString("cafeID")!!
+                    ObjectDetailsScreen(navController, cafeID)
+                }
+                composable("leaderboard") { LeaderboardScreen(navController) }
+                composable("profile") { ProfileScreen(navController) }
             }
-           // composable("details"){ ObjectDetailsScreen(navController = navController, "Kd5Vx6amZORNRKee2ztH") }
         }
-    }
+    )
 }
 
 @Composable
@@ -56,8 +62,7 @@ fun BottomNavBar(navController: NavHostController) {
             icon = { Icon(Icons.Filled.Person, contentDescription = "Profile") },
             label = { Text("Profile") },
             selected = false,
-            onClick = { Firebase.auth.signOut() } //privremeno
-                //navController.navigate("profile") }
+            onClick = { navController.navigate("profile") }
         )
 
         NavigationBarItem(
