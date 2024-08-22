@@ -20,8 +20,10 @@ import android.Manifest
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+
 import com.example.scoutanddine.navigation.NavBar
 import com.example.scoutanddine.services.LocationService
+
 
 import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
 
@@ -43,6 +45,8 @@ class MainActivity : ComponentActivity() {
             requestBGLocationPermission()
         }
 
+        val serviceIntent = Intent(this, LocationService::class.java)
+        startService(serviceIntent)
 
         setContent {
             ScoutAndDineTheme {
@@ -60,8 +64,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
-        i = Intent(this, LocationService::class.java)
-        startService(i)
     }
 
     override fun onStop() {

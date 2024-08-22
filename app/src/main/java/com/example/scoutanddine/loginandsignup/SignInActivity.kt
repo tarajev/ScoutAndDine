@@ -91,7 +91,7 @@ fun SignInScreen(onSignInClick: (String, String) -> Unit, onSignUpClick: () -> U
         // Top Bar
         Box(
             modifier = Modifier
-                .background(Color(0xFF00573F))
+                .background(Color(51,204, 255))
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
@@ -132,7 +132,7 @@ fun SignInScreen(onSignInClick: (String, String) -> Unit, onSignUpClick: () -> U
 
         Button(
             onClick = { onSignInClick(email.text, password.text) },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00573F)),
+            colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -144,7 +144,7 @@ fun SignInScreen(onSignInClick: (String, String) -> Unit, onSignUpClick: () -> U
         Spacer(modifier = Modifier.height(24.dp))
 
         TextButton(onClick = onSignUpClick) {
-            Text(text = "Don't have an account? Sign Up", color = Color(0xFF00573F))
+            Text(text = "Don't have an account? Sign Up", color = Color(51,204, 255))
         }
     }
 }

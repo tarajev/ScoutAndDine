@@ -61,7 +61,7 @@ fun LeaderboardScreen(navController: NavController) {
                     textAlign = TextAlign.Center
                 )
             },
-            colors = TopAppBarColors(Color(0xFF00573F), Color(0xFF00573F),Color(0xFF00573F), Color(0xFF00573F), Color(0xFF00573F)),
+            colors = TopAppBarColors(Color(51,204, 255), Color(51,204, 255),Color(51,204, 255), Color(51,204, 255), Color(51,204, 255)),
             modifier = Modifier.shadow(4.dp)
         )
 

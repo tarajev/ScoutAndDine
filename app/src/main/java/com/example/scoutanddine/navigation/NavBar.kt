@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Leaderboard
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
@@ -24,9 +25,7 @@ import androidx.navigation.navArgument
 import com.example.scoutanddine.screens.LeaderboardScreen
 import com.example.scoutanddine.screens.ObjectDetailsScreen
 import com.example.scoutanddine.screens.ProfileScreen
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
+import com.example.scoutanddine.screens.SearchScreen
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -47,6 +46,7 @@ fun NavBar() {
                 }
                 composable("leaderboard") { LeaderboardScreen(navController) }
                 composable("profile") { ProfileScreen(navController) }
+                composable("search") { SearchScreen(navController)}
             }
         }
     )
@@ -63,6 +63,13 @@ fun BottomNavBar(navController: NavHostController) {
             label = { Text("Profile") },
             selected = false,
             onClick = { navController.navigate("profile") }
+        )
+
+        NavigationBarItem(
+            icon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+            label = { Text("Search") },
+            selected = false,
+            onClick = { navController.navigate("search") }
         )
 
         NavigationBarItem(

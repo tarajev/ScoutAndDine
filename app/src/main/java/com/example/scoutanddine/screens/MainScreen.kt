@@ -19,7 +19,7 @@ import androidx.navigation.NavHostController
 import com.example.scoutanddine.data.CafeRestaurant
 import com.example.scoutanddine.data.FirebaseObject
 import com.example.scoutanddine.screens.AddObjectDialog
-import com.example.scoutanddine.services.LocationService
+import com.example.scoutanddine.services.LocationInfo
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -31,40 +31,25 @@ import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun MainScreen(navController: NavHostController) {
-    var userLocation by remember { mutableStateOf<Location?>(null) }
+    var userLocation by remember { mutableStateOf<Location?>(LocationInfo.location) }
     val context = LocalContext.current
     var showAddCafeDialog by remember { mutableStateOf(false) }
     var cafeRestaurants by remember { mutableStateOf<List<CafeRestaurant>>(emptyList()) }
 
     fun subscriber(location: Location?) {
         userLocation = location
-        Log.e("HOME", "Home: ${location?.latitude.toString()}, ${userLocation?.longitude}")
+        Log.e("HOME", "Home: $location")
     }
 
+    LocationInfo.subscribe(::subscriber)
 
-    DisposableEffect(Unit) {
-        val intentFilter = IntentFilter("com.example.LOCATION_UPDATE")
-        val receiver = object : BroadcastReceiver() {
-            @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-            override fun onReceive(context: Context, intent: Intent) {
-                val location = intent.getParcelableExtra(LocationService.EXTRA_LOCATION, Location::class.java)
-                Log.d("MainScreen", "Broadcast received with location: ${location?.latitude}, ${location?.longitude}")
-                subscriber(location)
-            }
-        }
-        LocalBroadcastManager.getInstance(context).registerReceiver(receiver, intentFilter)
-
-        onDispose {
-            LocalBroadcastManager.getInstance(context).unregisterReceiver(receiver)
-        }
-    }
 
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(LatLng(0.0, 0.0), 20f)
     }
 
    LaunchedEffect(userLocation) {
-        userLocation?.let {
+      userLocation?.let {
             val latLng = LatLng(it.latitude, it.longitude)
             val zoomLevel = cameraPositionState.position.zoom
             cameraPositionState.position = CameraPosition.fromLatLngZoom(latLng, zoomLevel)

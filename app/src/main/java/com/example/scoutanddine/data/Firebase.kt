@@ -1,9 +1,11 @@
 package com.example.scoutanddine.data
 
+import android.location.Location
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import android.net.Uri
 import com.example.scoutanddine.data.entities.User
+import com.example.scoutanddine.extras.calculateDistance
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
@@ -288,7 +290,8 @@ object FirebaseObject {
         storageRef.putFile(imageUri).addOnSuccessListener {
             storageRef.downloadUrl.addOnSuccessListener { uri ->
                 val imageUrl = uri.toString()
-                val firestoreRef = Firebase.firestore.collection("objects").document(cafeRestaurantID)
+                val firestoreRef =
+                    Firebase.firestore.collection("objects").document(cafeRestaurantID)
                 firestoreRef.update("imageUrls", FieldValue.arrayUnion(imageUrl))
                     .addOnSuccessListener {
                         onSuccess()
@@ -302,5 +305,45 @@ object FirebaseObject {
         }.addOnFailureListener { exception ->
             onFailure(exception)
         }
+    }
+
+    fun searchForCafeRestaurants(
+        query: String,
+        tag: String,
+        minRating: Int,
+        onlyAvailable: Boolean,
+        radius: Float,
+        userLocation: Location?,
+        onResults: (List<CafeRestaurant>) -> Unit
+    ) {
+        Firebase.firestore.collection("objects").get()
+            .addOnSuccessListener { snapshot ->
+                val allResults =
+                    snapshot.documents.mapNotNull { it.toObject(CafeRestaurant::class.java) }
+                Log.d(
+                    "SEARCHTEST",
+                    "Total items: ${allResults.size}"
+                )
+
+                val results = allResults.filter { cafeRestaurant ->
+                    cafeRestaurant.name.contains(query, ignoreCase = true) &&
+                            (tag == "All" || cafeRestaurant.type.contains(
+                                tag,
+                                ignoreCase = true
+                            )) &&
+                            cafeRestaurant.rating >= minRating &&
+                            (!onlyAvailable || cafeRestaurant.crowdInfo != "Nema slobodnih mesta")
+                            && (radius == 0f  || calculateDistance(
+                        cafeRestaurant.location.latitude,
+                        cafeRestaurant.location.longitude,
+                        userLocation
+                    ) < radius)
+                }
+                onResults(results)
+                Log.d("SEARCHTEST", results.size.toString())
+            }
+            .addOnFailureListener {
+                // Handle failure
+            }
     }
 }
