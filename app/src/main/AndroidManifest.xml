@@ -60,6 +60,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        <receiver android:name=".services.NotificationReceiver" android:exported="true"/>
     </application>
 
 </manifest>
