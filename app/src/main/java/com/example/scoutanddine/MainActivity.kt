@@ -70,6 +70,11 @@ class MainActivity : ComponentActivity() {
         super.onStop()
         stopService(i)
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopService(i)
+    }
     @RequiresApi(Build.VERSION_CODES.Q)
     private fun requestBGLocationPermission() {
         ActivityCompat.requestPermissions(

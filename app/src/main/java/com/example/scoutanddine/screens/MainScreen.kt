@@ -1,13 +1,9 @@
 import android.location.Location
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -224,6 +220,8 @@ fun MainScreen(navController: NavHostController) {
                                 hours = cafeRestaurant.hours,
                                 successCallback = {
                                     Log.d("MainScreen", "CafeRestaurant added successfully")
+                                    cafeRestaurants = cafeRestaurants + cafeRestaurant
+                                    filteredCafeRestaurants = filteredCafeRestaurants + cafeRestaurant
                                 },
                                 failureCallback = { e ->
                                     Log.w("MainScreen", "Error adding CafeRestaurant", e)
