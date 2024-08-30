@@ -1,5 +1,7 @@
 package com.example.scoutanddine.screens
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -24,9 +26,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scoutanddine.data.entities.User
+import com.example.scoutanddine.services.LocationService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -35,6 +39,8 @@ import kotlinx.coroutines.tasks.await
 fun ProfileScreen(navController: NavController) {
     val currentUser = FirebaseAuth.getInstance().currentUser
     val uid = currentUser?.uid
+    var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     var userData by remember { mutableStateOf<User?>(null) }
 
@@ -66,7 +72,7 @@ fun ProfileScreen(navController: NavController) {
                         .clip(CircleShape)
                         .align(Alignment.TopCenter)
                 )
-                IconButton(onClick = { /* Handle settings click */ }) {
+                IconButton(onClick = { showDialog = true }) {
                     Icon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Settings",
@@ -154,4 +160,49 @@ fun ProfileScreen(navController: NavController) {
 
         }
     }
+    if (showDialog) {
+        SettingsDialog(context = context, onDismissRequest = { showDialog = false })
+    }
+}
+
+@Composable
+fun SettingsDialog(
+    context: Context,
+    onDismissRequest: () -> Unit
+) {
+    val sharedPreferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    var isServiceEnabled by remember { mutableStateOf(sharedPreferences.getBoolean("service_enabled", true)) }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(text = "Settings")
+        },
+        text = {
+            Row {
+                Text(text = "Enable Location Service")
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = isServiceEnabled,
+                    onCheckedChange = { isChecked ->
+                        isServiceEnabled = isChecked
+                        // Save the preference
+                        sharedPreferences.edit().putBoolean("service_enabled", isChecked).apply()
+
+                        // Start or stop the service
+                        if (isChecked) {
+                            context.startService(Intent(context, LocationService::class.java))
+                        } else {
+                            context.stopService(Intent(context, LocationService::class.java))
+                        }
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text("OK")
+            }
+        }
+    )
 }

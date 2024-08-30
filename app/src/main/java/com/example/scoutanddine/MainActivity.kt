@@ -5,33 +5,29 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.scoutanddine.loginandsignup.SignInActivity
 import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import android.Manifest
+import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
-
 import com.example.scoutanddine.navigation.NavBar
 import com.example.scoutanddine.services.LocationService
 
-
-import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
 
 class MainActivity : ComponentActivity() {
     var i: Intent? = null
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val sharedPreferences = getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val isServiceEnabled = sharedPreferences.getBoolean("service_enabled", true)
 
         ActivityCompat.requestPermissions(
             this,
@@ -46,6 +42,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val serviceIntent = Intent(this, LocationService::class.java)
+        if(isServiceEnabled)
         startService(serviceIntent)
 
         setContent {
