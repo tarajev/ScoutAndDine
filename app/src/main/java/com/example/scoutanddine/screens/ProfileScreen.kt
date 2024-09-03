@@ -1,5 +1,6 @@
 package com.example.scoutanddine.screens
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Modifier.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +43,7 @@ fun ProfileScreen(navController: NavController) {
     val uid = currentUser?.uid
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
 
     var userData by remember { mutableStateOf<User?>(null) }
 
@@ -157,7 +160,6 @@ fun ProfileScreen(navController: NavController) {
                 fontSize = 14.sp,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
         }
     }
     if (showDialog) {

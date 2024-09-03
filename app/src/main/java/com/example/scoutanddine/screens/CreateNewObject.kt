@@ -87,12 +87,6 @@ fun AddObjectDialog(onDismiss: () -> Unit, onSubmit: (CafeRestaurant) -> Unit, l
                     onValueChange = { hours = it },
                     label = { Text("Working Hours") }
                 )
-                /*TextField(
-                    value = reviews,
-                    onValueChange = { reviews = it },
-                    label = { Text("Reviews") }
-                )
-                */
 
             }
         },

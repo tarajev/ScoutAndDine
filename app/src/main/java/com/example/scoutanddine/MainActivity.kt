@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -22,6 +23,7 @@ import com.example.scoutanddine.services.LocationService
 
 class MainActivity : ComponentActivity() {
     var i: Intent? = null
+    @SuppressLint("SuspiciousIndentation")
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,10 +65,6 @@ class MainActivity : ComponentActivity() {
         super.onStart()
     }
 
-    override fun onStop() {
-        super.onStop()
-        stopService(i)
-    }
 
     override fun onDestroy() {
         super.onDestroy()

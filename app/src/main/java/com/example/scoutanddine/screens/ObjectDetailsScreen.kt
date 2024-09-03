@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -24,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -92,10 +95,6 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 imageUrl = uri.toString() // Store image URL
             }
         }
-    }
-
-    val getImageLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        selectedImageUri = uri
     }
 
     val requestCameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -187,18 +186,21 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 items(cafeRestaurant!!.reviews) { review ->
                     Card(
                         modifier = Modifier
-                            .width(300.dp) // Adjust width as needed
+                            .width(300.dp)
                             .padding(horizontal = 8.dp)
-                            .border(1.dp, Color.Gray),
-                        elevation = CardDefaults.cardElevation(2.5.dp)
+                            .background(Color.White) // Bela pozadina
+                            .shadow(4.dp, spotColor = Color.DarkGray, ambientColor = Color.Transparent, shape= RoundedCornerShape(16.dp)),
+                        elevation = CardDefaults.cardElevation(0.dp),
+                        shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(
                             modifier = Modifier
                                 .padding(8.dp)
                                 .fillMaxWidth()
+                                .background(Color.Transparent)
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().background(Color.Transparent),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -241,6 +243,7 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 .padding(16.dp)
         ) {
             Button(
+                colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -250,6 +253,7 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 Text(text = "Ostavi recenziju", color = Color.White)
             }
             Button(
+                colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -289,6 +293,7 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
+                            colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
                             onClick = {
                                 val permissionCheckResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
                                 if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
@@ -315,7 +320,8 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                     }
                 },
                 confirmButton = {
-                    Button(onClick = {
+                    Button(colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                        onClick = {
                         if (selectedImageUri != null) {
                             uploadImageRestaurant(
                                 cafeRestaurantID = cafeRestaurantID,
@@ -337,7 +343,8 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                     }
                 },
                 dismissButton = {
-                    Button(onClick = {
+                    Button(colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                        onClick = {
                         showReviewDialog = false
                     }) {
                         Text("Otkaži")
@@ -376,7 +383,9 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                     }
                 },
                 confirmButton = {
-                    Button(onClick = {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                        onClick = {
                         var info = ""
                         if (crowdOption1)
                             info = "Nema slobodnih mesta"
@@ -392,7 +401,8 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                     }
                 },
                 dismissButton = {
-                    Button(onClick = { showCrowdDialog = false }) {
+                    Button(onClick = { showCrowdDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),) {
                         Text("Otkaži")
                     }
                 }

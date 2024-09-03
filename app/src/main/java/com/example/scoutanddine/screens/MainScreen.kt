@@ -186,8 +186,10 @@ fun MainScreen(navController: NavHostController) {
                 ) {
                     SearchBar(
                         query = searchQuery,
-                        onQueryChange = { searchQuery = it }
+                        onQueryChange = { searchQuery = it },
+                        onSearch = { applyFilters() }
                     )
+
                 }
 
             }

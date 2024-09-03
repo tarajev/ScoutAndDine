@@ -12,6 +12,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -105,16 +107,18 @@ fun SignUpScreen(
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var phoneNumber by remember { mutableStateOf(TextFieldValue("")) }
     var name by remember { mutableStateOf(TextFieldValue("")) }
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .verticalScroll(scrollState)
     ) {
         // Top Bar
         Box(
             modifier = Modifier
-                .background(Color(0xFF00573F))
+                .background(Color(51,204, 255))
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
@@ -196,7 +200,7 @@ fun SignUpScreen(
             // Upload Image Button
             Button(
                 onClick = onPickImageClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00573F)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(51,204, 255)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)
@@ -242,7 +246,7 @@ fun SignUpScreen(
                         Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00573F)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(51,204, 255)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 10.dp)
@@ -258,7 +262,7 @@ fun SignUpScreen(
                 onClick = onSignInClick,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) {
-                Text(text = "Already have an account? Sign In", color = Color(0xFF00573F))
+                Text(text = "Already have an account? Sign In", color = Color(0,0,0))
             }
         }
     }

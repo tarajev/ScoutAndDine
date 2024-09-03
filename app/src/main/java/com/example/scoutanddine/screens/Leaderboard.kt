@@ -1,3 +1,4 @@
+
 package com.example.scoutanddine.screens
 
 import android.util.Log
