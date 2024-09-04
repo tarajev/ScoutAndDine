@@ -8,12 +8,16 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -39,6 +43,7 @@ import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scoutanddine.R
+import com.example.scoutanddine.components.ReviewContent
 import com.example.scoutanddine.data.entities.CafeRestaurant
 import com.example.scoutanddine.data.FirebaseObject
 import com.example.scoutanddine.data.FirebaseObject.fetchCafeRestaurantById
@@ -177,7 +182,11 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
 
         // Crowd
         Text(
-            text = "*${cafeRestaurant?.crowdInfo} : ${cafeRestaurant?.lastUpdated}",
+            text = if (!cafeRestaurant?.crowdInfo.isNullOrEmpty()) {
+                "*${cafeRestaurant?.crowdInfo} : ${cafeRestaurant?.lastUpdated}"
+            } else {
+                "Nema informacija o gužvi"
+            },
             fontSize = 16.sp,
             color = Color.Gray,
             modifier = Modifier.align(Alignment.Start)
@@ -200,6 +209,8 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 modifier = Modifier.fillMaxWidth()
             ) {
                 items(cafeRestaurant!!.reviews) { review ->
+                    var isExpanded by remember { mutableStateOf(false) }
+
                     Card(
                         modifier = Modifier
                             .width(300.dp)
@@ -209,57 +220,30 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                                 spotColor = Color.Black,
                                 ambientColor = Color.Gray,
                                 shape = RoundedCornerShape(16.dp)
-                            ),
+                            )
+                            .clickable { isExpanded = !isExpanded }, // Klik za proširenje
                         elevation = CardDefaults.cardElevation(0.dp),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .fillMaxWidth()
-                                .background(Color.Transparent)
-                        ) {
-                            Row(
+                        if (isExpanded) {
+                            Column(
                                 modifier = Modifier
+                                    .padding(8.dp)
                                     .fillMaxWidth()
-                                    .background(Color.Transparent),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                    .background(Color.Transparent)
+                                    .verticalScroll(rememberScrollState()) // Omogućava skrolovanje
                             ) {
-                                Text(
-                                    text = "Autor: ${review.user}",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
-                                    color = Color.Black
-                                )
-                                Text(
-                                    text = review.date,
-                                    fontSize = 14.sp,
-                                    color = Color.Gray
-                                )
+                                ReviewContent(review)
                             }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = review.reviewText,
-                                fontSize = 16.sp,
-                                color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically)
-                            {
-                                Text(
-                                    text = review.rating.toString(),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp,
-                                    color = Color.Black
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = "Zvezdica",
-                                    modifier = Modifier.size(16.dp)
-                                )
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .fillMaxWidth()
+                                    .background(Color.Transparent)
+                            ) {
+                                ReviewContent(review, maxLines = 1) // prikazuje se samo jedan red
                             }
                         }
                     }
@@ -304,21 +288,26 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                     Column {
                         OutlinedTextField(
                             value = reviewText,
-                            onValueChange = { reviewText = it },
+                            onValueChange = {
+                                if (it.length <= 200) {
+                                    reviewText = it
+                                }
+                            },
                             label = { Text("Recenzija") }
+
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(text = "Ocena:")
-                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(1.dp)) {
                             for (i in 1..5) {
                                 IconButton(
                                     onClick = { rating = i },
-                                    modifier = Modifier.size(32.dp)
+                                    modifier = Modifier.size(34.dp)
                                 ) {
-                                    androidx.compose.material3.Icon(
-                                        painter = painterResource(id = if (i <= rating) R.drawable.star_filled_icon else R.drawable.star_outline_icon),
+                                    Icon(
+                                        imageVector = if (i <= rating) Icons.Default.Star else Icons.Default.StarBorder,
                                         contentDescription = null,
-                                        tint = if (i <= rating) Color.Yellow else Color.Gray
+                                        tint = if (i <= rating) Color.Black else Color.Gray
                                     )
                                 }
                             }
@@ -360,6 +349,7 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                         }
                     }
                 },
+
                 confirmButton = {
                     Button(colors = ButtonDefaults.buttonColors(
                         containerColor = Color(
@@ -367,6 +357,7 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                             204,
                             255
                         )
+
                     ),
                         onClick = {
                             if (selectedImageUri != null) {

@@ -10,13 +10,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import com.example.scoutanddine.ui.theme.ScoutAndDineTheme
 import com.example.scoutanddine.navigation.NavBar
 import com.example.scoutanddine.services.LocationService
 

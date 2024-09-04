@@ -184,7 +184,7 @@ fun RatingBar(rating: Int, onRatingChange: (Int) -> Unit) {
                 Icon(
                     imageVector = if (i <= rating) Icons.Filled.Star else Icons.Filled.StarOutline,
                     contentDescription = null,
-                    tint = if (i <= rating) Color.Yellow else Color.Gray
+                    tint = if (i <= rating) Color.Black else Color.Gray
                 )
             }
         }
