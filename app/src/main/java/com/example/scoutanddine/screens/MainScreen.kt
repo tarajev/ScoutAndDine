@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.scoutanddine.components.FilterDialog
 import com.example.scoutanddine.components.SearchBar
-import com.example.scoutanddine.data.CafeRestaurant
+import com.example.scoutanddine.data.entities.CafeRestaurant
 import com.example.scoutanddine.data.FirebaseObject
 import com.example.scoutanddine.screens.AddObjectDialog
 import com.example.scoutanddine.services.LocationInfo

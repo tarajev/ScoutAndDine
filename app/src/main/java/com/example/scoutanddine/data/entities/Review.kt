@@ -1,4 +1,4 @@
-package com.example.scoutanddine.data
+package com.example.scoutanddine.data.entities
 
 class Review(
     var user: String = "",

@@ -4,6 +4,8 @@ import android.location.Location
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import android.net.Uri
+import com.example.scoutanddine.data.entities.CafeRestaurant
+import com.example.scoutanddine.data.entities.Review
 import com.example.scoutanddine.data.entities.User
 import com.example.scoutanddine.extras.calculateDistance
 import com.google.firebase.Firebase
@@ -12,6 +14,8 @@ import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.toObject
 import com.google.firebase.storage.storage
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
@@ -135,22 +139,7 @@ object FirebaseObject {
         }.addOnFailureListener { exception ->
             onFailure(exception)
         }
-    }/* fun fetchCafeRestaurantById(id: String, onSuccess: (CafeRestaurant) -> Unit, onFailure: (Exception) -> Unit) {
-
-         Firebase.firestore.collection("objects").document(id).get()
-             .addOnSuccessListener { document ->
-                 if (document.exists()) {
-                     val cafeRestaurant = document.toObject(CafeRestaurant::class.java)
-                     cafeRestaurant?.id = document.id
-                     onSuccess(cafeRestaurant!!)
-                 } else {
-                     onFailure(Exception("Document does not exist"))
-                 }
-             }
-             .addOnFailureListener { e ->
-                 onFailure(e)
-             }
-     }*/
+    }
 
     fun fetchCafeRestaurantById(
         id: String, onSuccess: (CafeRestaurant) -> Unit, onFailure: (Exception) -> Unit
@@ -218,7 +207,7 @@ object FirebaseObject {
                     Firebase.firestore.collection("objects").document(cafeId).collection("reviews")
                         .document(reviewId).set(review).addOnSuccessListener {
                             Log.d("FirestoreUpdate", "Review successfully added!")
-                            //updateAverageRating(cafeId) // azuriranje prosecne ocene implementirati
+                            updateAverageRating(cafeId, review.rating) // azuriranje prosecne ocene implementirati
                             addPoints(auth.currentUser!!.uid.toString(), 3)
                         }.addOnFailureListener { e ->
                             Log.w("FirestoreUpdate", "Error adding review", e)
@@ -345,5 +334,32 @@ object FirebaseObject {
             .addOnFailureListener {
                 // Handle failure
             }
+    }
+}
+fun updateAverageRating(cafeId: String, newRating: Int) {
+    val cafeRef = Firebase.firestore.collection("objects").document(cafeId)
+
+    Firebase.firestore.runTransaction { transaction ->
+        val snapshot = transaction.get(cafeRef)
+
+        // Preuzimanje trenutnog stanja
+        val currentTotalRating = snapshot.getLong("ratingSum") ?: 0L
+        val currentReviewCount = snapshot.getLong("reviewCount") ?: 0L
+
+        // Ažuriranje podataka
+        val newTotalRating = currentTotalRating + newRating
+        val newReviewCount = currentReviewCount + 1
+
+        val newAverageRating = newTotalRating.toFloat() / newReviewCount
+        val roundedUp = BigDecimal(newAverageRating.toDouble()).setScale(1, RoundingMode.HALF_EVEN).toDouble()
+
+        // Postavljanje ažuriranih podataka
+        transaction.update(cafeRef, "ratingSum", newTotalRating)
+        transaction.update(cafeRef, "reviewCount", newReviewCount)
+        transaction.update(cafeRef, "rating", roundedUp)
+    }.addOnSuccessListener {
+        Log.d("FirestoreUpdate", "Average rating updated successfully!")
+    }.addOnFailureListener { e ->
+        Log.w("FirestoreUpdate", "Error updating average rating", e)
     }
 }

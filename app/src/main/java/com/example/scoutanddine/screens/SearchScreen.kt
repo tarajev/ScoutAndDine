@@ -20,7 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.scoutanddine.data.CafeRestaurant
+import com.example.scoutanddine.data.entities.CafeRestaurant
 import com.example.scoutanddine.components.SearchBar
 import com.example.scoutanddine.data.FirebaseObject.searchForCafeRestaurants
 import com.example.scoutanddine.services.LocationInfo

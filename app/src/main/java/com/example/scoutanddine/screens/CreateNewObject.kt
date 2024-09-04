@@ -13,7 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.input.KeyboardType
 import com.google.firebase.firestore.GeoPoint
-import com.example.scoutanddine.data.CafeRestaurant
+import com.example.scoutanddine.data.entities.CafeRestaurant
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import java.util.Locale

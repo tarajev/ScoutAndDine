@@ -5,16 +5,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "profiles")
-data class UserProfile(
-    @PrimaryKey(autoGenerate = true) val id: Int,
-    @ColumnInfo(name = "username") val username: String,
-    @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "email") val email: String,
-    @ColumnInfo(name = "phone") val phone: String,
-    @ColumnInfo(name = "image") val image: String
-)
-
 
 class User {
     var id: String = ""

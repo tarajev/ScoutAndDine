@@ -10,10 +10,9 @@ import android.content.Intent
 import android.location.Location
 import android.os.IBinder
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.example.scoutanddine.R
-import com.example.scoutanddine.data.CafeRestaurant
+import com.example.scoutanddine.data.entities.CafeRestaurant
 import com.example.scoutanddine.data.FirebaseObject.addPoints
 import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
@@ -27,7 +26,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlin.time.toDuration
 
 
 class LocationService : Service() {

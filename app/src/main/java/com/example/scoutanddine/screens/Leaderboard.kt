@@ -2,6 +2,7 @@
 package com.example.scoutanddine.screens
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -70,55 +73,75 @@ fun LeaderboardScreen(navController: NavController) {
         LazyColumn(modifier = Modifier.fillMaxSize().padding(0.dp,64.dp,0.dp,0.dp)) {
             items(users ?: emptyList()) { user ->
                 val rank = users?.indexOf(user)?.plus(1) ?: 0
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                        .border(1.dp, Color.Gray)
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(user.image),
-                        contentDescription = "Profile Image",
+                Card(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp, vertical = 4.dp)
+                    .shadow(
+                        4.dp,
+                        spotColor = Color.Black,
+                        ambientColor = Color.Gray,
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                    elevation = CardDefaults.cardElevation(0.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, Color.Black),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Row(
                         modifier = Modifier
-                            .size(40.dp)
-                            //.clip(CircleShape)
-                            .background(Color.Gray)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 8.dp)
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = user.username, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = "${user.points} points", fontSize = 14.sp, color = Color.Gray)
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(
-                                when (rank) {
-                                    1 -> Color(0xFFFFD700) // Gold for 1st place
-                                    2 -> Color(0xFFC0C0C0) // Silver for 2nd place
-                                    3 -> Color(0xFFCD7F32) // Bronze for 3rd place
-                                    else -> Color(0xFF4CAF50) // Green for other places
-                                },
-                                shape = CircleShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = rank.toString(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
+                        Image(
+                            painter = rememberAsyncImagePainter(user.image),
+                            contentDescription = "Profile Image",
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color.Gray)
                         )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 8.dp)
+                        ) {
+                            Text(
+                                text = user.username,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "${user.points} points",
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(
+                                    when (rank) {
+                                        1 -> Color(0xFFFFD700) // Gold for 1st place
+                                        2 -> Color(0xFFC0C0C0) // Silver for 2nd place
+                                        3 -> Color(0xFFCD7F32) // Bronze for 3rd place
+                                        else -> Color(0xFF01CCFF) // Blue for other places
+                                    },
+                                    shape = CircleShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = rank.toString(),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
                 }
             }

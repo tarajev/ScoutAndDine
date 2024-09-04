@@ -8,18 +8,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -35,11 +36,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scoutanddine.R
-import com.example.scoutanddine.data.CafeRestaurant
+import com.example.scoutanddine.data.entities.CafeRestaurant
 import com.example.scoutanddine.data.FirebaseObject
 import com.example.scoutanddine.data.FirebaseObject.fetchCafeRestaurantById
 import com.example.scoutanddine.data.FirebaseObject.uploadImageRestaurant
@@ -89,23 +89,25 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
         )
     }
 
-    val takePictureLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) {
-            selectedImageUri?.let { uri ->
-                imageUrl = uri.toString() // Store image URL
+    val takePictureLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) {
+                selectedImageUri?.let { uri ->
+                    imageUrl = uri.toString() // Store image URL
+                }
             }
         }
-    }
 
-    val requestCameraPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-        if (isGranted) {
-            val photoUri = createImageFile(context)
-            selectedImageUri = photoUri
-            takePictureLauncher.launch(photoUri)
-        } else {
-            // Handle permission denied case
+    val requestCameraPermissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                val photoUri = createImageFile(context)
+                selectedImageUri = photoUri
+                takePictureLauncher.launch(photoUri)
+            } else {
+                // Handle permission denied case
+            }
         }
-    }
 
     Column(
         modifier = Modifier
@@ -129,13 +131,27 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Cafe name
-        Text(
-            text = cafeRestaurant?.name ?: "",
-            fontWeight = FontWeight.Bold,
-            fontSize = 24.sp,
-            modifier = Modifier.align(Alignment.Start)
-        )
+        // Cafe name and average rating
+        Row(verticalAlignment = Alignment.CenterVertically)
+        {
+            Text(
+                text = cafeRestaurant?.name ?: "",
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = cafeRestaurant?.rating.toString(),
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                color = Color.Black
+            )
+            Icon(
+                imageVector = Icons.Default.Star,
+                contentDescription = "Zvezdica",
+                modifier = Modifier.size(24.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -188,10 +204,15 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                         modifier = Modifier
                             .width(300.dp)
                             .padding(horizontal = 8.dp)
-                            .background(Color.White) // Bela pozadina
-                            .shadow(4.dp, spotColor = Color.DarkGray, ambientColor = Color.Transparent, shape= RoundedCornerShape(16.dp)),
+                            .shadow(
+                                4.dp,
+                                spotColor = Color.Black,
+                                ambientColor = Color.Gray,
+                                shape = RoundedCornerShape(16.dp)
+                            ),
                         elevation = CardDefaults.cardElevation(0.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(
                             modifier = Modifier
@@ -200,7 +221,9 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                                 .background(Color.Transparent)
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxWidth().background(Color.Transparent),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color.Transparent),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -223,12 +246,21 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                                 color = Color.Black
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "Ocena: ${review.rating} zvezdica",
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = Color.Yellow
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically)
+                            {
+                                Text(
+                                    text = review.rating.toString(),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color.Black
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Zvezdica",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -243,7 +275,7 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 .padding(16.dp)
         ) {
             Button(
-                colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(51, 204, 255)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -253,7 +285,7 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 Text(text = "Ostavi recenziju", color = Color.White)
             }
             Button(
-                colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(51, 204, 255)),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -293,9 +325,18 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(
-                            colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    51,
+                                    204,
+                                    255
+                                )
+                            ),
                             onClick = {
-                                val permissionCheckResult = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                                val permissionCheckResult = ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.CAMERA
+                                )
                                 if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
                                     val photoUri = createImageFile(context)
                                     selectedImageUri = photoUri
@@ -320,33 +361,49 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                     }
                 },
                 confirmButton = {
-                    Button(colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                    Button(colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(
+                            51,
+                            204,
+                            255
+                        )
+                    ),
                         onClick = {
-                        if (selectedImageUri != null) {
-                            uploadImageRestaurant(
-                                cafeRestaurantID = cafeRestaurantID,
-                                imageUri = selectedImageUri!!,
-                                onSuccess = {
-                                    FirebaseObject.addReview(cafeRestaurantID, reviewText, rating)
-                                    showReviewDialog = false
-                                },
-                                onFailure = {
-                                    // Handle failure
-                                }
-                            )
-                        } else {
-                            FirebaseObject.addReview(cafeRestaurantID, reviewText, rating)
-                            showReviewDialog = false
-                        }
-                    }) {
+                            if (selectedImageUri != null) {
+                                uploadImageRestaurant(
+                                    cafeRestaurantID = cafeRestaurantID,
+                                    imageUri = selectedImageUri!!,
+                                    onSuccess = {
+                                        FirebaseObject.addReview(
+                                            cafeRestaurantID,
+                                            reviewText,
+                                            rating
+                                        )
+                                        showReviewDialog = false
+                                    },
+                                    onFailure = {
+                                        // Handle failure
+                                    }
+                                )
+                            } else {
+                                FirebaseObject.addReview(cafeRestaurantID, reviewText, rating)
+                                showReviewDialog = false
+                            }
+                        }) {
                         Text("Potvrdi")
                     }
                 },
                 dismissButton = {
-                    Button(colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                    Button(colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(
+                            51,
+                            204,
+                            255
+                        )
+                    ),
                         onClick = {
-                        showReviewDialog = false
-                    }) {
+                            showReviewDialog = false
+                        }) {
                         Text("Otkaži")
                     }
                 }
@@ -384,25 +441,27 @@ fun ObjectDetailsScreen(navController: NavController, cafeRestaurantID: String) 
                 },
                 confirmButton = {
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(51, 204, 255)),
                         onClick = {
-                        var info = ""
-                        if (crowdOption1)
-                            info = "Nema slobodnih mesta"
-                        else if (crowdOption2)
-                            info = "Ima nekoliko slobodnih mesta"
-                        else
-                            info = "Mnogo slobodnih mesta"
+                            var info = ""
+                            if (crowdOption1)
+                                info = "Nema slobodnih mesta"
+                            else if (crowdOption2)
+                                info = "Ima nekoliko slobodnih mesta"
+                            else
+                                info = "Mnogo slobodnih mesta"
 
-                        FirebaseObject.addCrowdednessInformation(cafeRestaurantID, info)
-                        showCrowdDialog = false
-                    }) {
+                            FirebaseObject.addCrowdednessInformation(cafeRestaurantID, info)
+                            showCrowdDialog = false
+                        }) {
                         Text("Potvrdi")
                     }
                 },
                 dismissButton = {
-                    Button(onClick = { showCrowdDialog = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color( 51,204, 255)),) {
+                    Button(
+                        onClick = { showCrowdDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(51, 204, 255)),
+                    ) {
                         Text("Otkaži")
                     }
                 }
