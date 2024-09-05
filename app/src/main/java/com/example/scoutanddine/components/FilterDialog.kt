@@ -9,15 +9,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.scoutanddine.screens.RatingBar
@@ -95,7 +98,10 @@ fun FilterDialog(
                     value = searchRadius,
                     onValueChange = onRadiusChanged,
                     valueRange = 0f..50f,
-                    steps = 100
+                    steps = 100,
+                    colors = SliderDefaults.colors(
+                        thumbColor =  Color(51, 204, 255),  // Boja dugmeta (klizača)
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -103,7 +109,11 @@ fun FilterDialog(
                 // Apply Button
                 Button(
                     onClick = onApplyFilters,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor =   Color(51, 204, 255),  // Boja pozadine dugmeta
+                        contentColor = Color.White // Boja teksta unutar dugmeta
+                    )
                 ) {
                     Text("Primeni")
                 }

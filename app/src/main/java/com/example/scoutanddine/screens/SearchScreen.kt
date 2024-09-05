@@ -109,13 +109,19 @@ fun SearchScreen(
                 value = searchRadius,
                 onValueChange = { searchRadius = round(it * 2) / 2 },
                 valueRange = 0f..50f,
-                steps = 100
+                steps = 100,
+                colors = SliderDefaults.colors(thumbColor =  Color(51, 204, 255),  // Boja dugmeta (klizača)
+            )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Search Button
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor =  Color(51, 204, 255),  // Boja pozadine dugmeta
+                    contentColor = Color.White // Boja teksta unutar dugmeta
+                ),
                 onClick = {
                     searchForCafeRestaurants(
                         searchQuery,

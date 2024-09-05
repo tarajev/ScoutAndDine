@@ -28,10 +28,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.scoutanddine.data.entities.User
+import com.example.scoutanddine.loginandsignup.SignUpActivity
 import com.example.scoutanddine.services.LocationService
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -70,6 +72,7 @@ fun ProfileScreen(navController: NavController) {
                 Image(
                     painter = rememberAsyncImagePainter(model = user.image),
                     contentDescription = "Profile Image",
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(100.dp)
                         .clip(CircleShape)
@@ -159,6 +162,24 @@ fun ProfileScreen(navController: NavController) {
                 color = Color.White,
                 fontSize = 14.sp,
                 modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Text(
+                text = "Log Out",
+                color = Color.White,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = 16.dp)
+                    .clickable {
+                        // Odjava korisnika
+                        FirebaseAuth.getInstance().signOut()
+
+                        // SignUpActivity i  gasimo  MainActivity
+                        val intent = Intent(context, SignUpActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        context.startActivity(intent)
+                    }
             )
         }
     }

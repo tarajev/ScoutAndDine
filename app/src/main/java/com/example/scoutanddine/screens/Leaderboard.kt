@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -70,7 +71,9 @@ fun LeaderboardScreen(navController: NavController) {
             modifier = Modifier.shadow(4.dp)
         )
 
-        LazyColumn(modifier = Modifier.fillMaxSize().padding(0.dp,64.dp,0.dp,0.dp)) {
+        LazyColumn(modifier = Modifier
+            .fillMaxSize()
+            .padding(0.dp, 64.dp, 0.dp, 74.dp)) {
             items(users ?: emptyList()) { user ->
                 val rank = users?.indexOf(user)?.plus(1) ?: 0
                 Card(modifier = Modifier
@@ -95,6 +98,7 @@ fun LeaderboardScreen(navController: NavController) {
                         Image(
                             painter = rememberAsyncImagePainter(user.image),
                             contentDescription = "Profile Image",
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(8.dp))

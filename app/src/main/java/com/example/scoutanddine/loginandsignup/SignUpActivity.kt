@@ -74,9 +74,14 @@ class SignUpActivity : ComponentActivity() {
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d("com.example.scoutanddine.loginandsignup.SignUpActivity", "createUserWithEmail:success")
-                    FirebaseObject.addUser(email,username,name,phoneNumber,profilePicture)
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
+                    FirebaseObject.addUser(email,username,name,phoneNumber,profilePicture,
+                        onSuccess = {
+                        val intent = Intent(this, MainActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    })
+                  /*  val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)*/
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w("com.example.scoutanddine.loginandsignup.SignUpActivity", "createUserWithEmail:failure", task.exception)
@@ -210,7 +215,7 @@ fun SignUpScreen(
 
             if (imageUriState.value != null) {
                 Text(
-                    text = imageUriState.value?.lastPathSegment ?: "Selected Image",
+                    text = "File uploaded",
                     modifier = Modifier
                         .padding(top = 8.dp)
                         .align(Alignment.CenterHorizontally),

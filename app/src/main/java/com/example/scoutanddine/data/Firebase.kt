@@ -27,7 +27,8 @@ object FirebaseObject {
         username: String,
         fullName: String,
         phoneNumber: String,
-        profilePictureUri: Uri
+        profilePictureUri: Uri,
+        onSuccess: () -> Unit
     ) {
         val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
@@ -35,19 +36,19 @@ object FirebaseObject {
             Firebase.firestore.collection("users").whereEqualTo("email", email).get()
                 .addOnSuccessListener { documents ->
                     if (documents.isEmpty) {
-                        val user = User().apply {
-                            this.email = email
-                            this.username = username
-                            this.name = fullName
-                            this.phone = phoneNumber
-                            this.image = profilePictureURL
-                            this.id = auth.currentUser!!.uid
-                        }
-
+                        val user= User(
+                            id = auth.currentUser!!.uid,
+                            email = email,
+                            username = username,
+                            name = fullName,
+                            phone = phoneNumber,
+                            image = profilePictureURL,
+                            points = 0
+                        )
                         Firebase.firestore.collection("users").document(user.id).set(user)
                             .addOnSuccessListener {
                                 Log.d("FirebaseHelper", "User data added successfully")
-                                //successCallback()
+                                onSuccess()
                             }.addOnFailureListener { e ->
                                 Log.w("FirebaseHelper", "Error adding document", e)
                                 //failureCallback()
@@ -76,6 +77,7 @@ object FirebaseObject {
         storageRef.putFile(profilePictureUri).addOnSuccessListener {
             storageRef.downloadUrl.addOnSuccessListener { uri ->
                 onSuccess(uri.toString())
+                Log.d("Firebase", "Slika uspesno dodata")
             }.addOnFailureListener { exception ->
                 onFailure(exception)
             }
